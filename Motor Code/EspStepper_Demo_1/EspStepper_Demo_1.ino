@@ -38,7 +38,13 @@ AccelStepper stepper_Hr(stepsPerRevolution, motorPin5, motorPin7, motorPin6, mot
 int previous_a = 0;
 int previous_b = 0;
 
+//stepper motor steps & angles
 int stepsToTake = 128; //16*64=1024
+int fullRevolution = 1080;
+int angle_Unit = fullRevolution/60;
+
+int moveAngle_Hr;
+int moveAngle_Min;
 
 #define hallPin_Hr  15    // 28BYJ48 pin 3
 #define hallPin_Min  4    // 28BYJ48 pin 4
@@ -50,6 +56,10 @@ long initial_homing = 1;
 int move_finished = 1;
 
 uint8_t functionIndex = 0;
+
+
+bool newData, runallowed = false; // booleans for new data from serial, and runallowed flag
+char receivedCommand; //character for commands
 
 
 // callback function that will be executed when data is *received*
@@ -104,8 +114,8 @@ void setup() {
   stepper_Min.setAcceleration(200.0);
 
 
-  stepper_Hr.setMaxSpeed(400.0);
-  stepper_Hr.setSpeed(400);
+  stepper_Hr.setMaxSpeed(1000.0);
+  stepper_Hr.setSpeed(800);
   stepper_Hr.setAcceleration(200.0);
 
 
@@ -134,8 +144,10 @@ void setup() {
 
 void loop() {
   //input in serial monitor to test movement
-  inputTest();
-
+    inputTest();
+//  checkSerial();
+//  stepper_Hr.run();
+//  stepper_Min.run();
 }
 
 
@@ -143,7 +155,7 @@ void home_Hr() {
   Serial.print("hallPin_Hr:  ");
   Serial.println(digitalRead(hallPin_Hr));
   while (digitalRead(hallPin_Hr)) {
-    Serial.print("initial_homing:  ");
+    Serial.print("Hr_initial_homing:  ");
     Serial.println(initial_homing);
     stepper_Hr.moveTo(initial_homing);
     initial_homing++;   // Hand_Hr will move CCW
@@ -161,7 +173,7 @@ void home_Hr() {
     stepper_Hr.moveTo(initial_homing);
     stepper_Hr.run();
     initial_homing--;
-    Serial.print("initial_homing:  ");
+    Serial.print("Hr_initial_homing:  ");
     Serial.println(initial_homing);
   }
 
@@ -173,12 +185,14 @@ void home_Hr() {
 
 }
 
-
 void home_Min() {
   Serial.println(digitalRead(hallPin_Min));
+  initial_homing = -1;
   while (digitalRead(hallPin_Min)) {
+    Serial.print("Min_initial_homing:  ");
+    Serial.println(initial_homing);
     stepper_Min.moveTo(initial_homing);
-    initial_homing--; // Hand_Hr will move CCW
+    initial_homing--;  // Hand_Hr will move CCW
     stepper_Min.run();
   }
 
@@ -188,7 +202,6 @@ void home_Min() {
   stepper_Min.setAcceleration(200.0);
   initial_homing = 1;
   delay(500);
-
   while (!digitalRead(hallPin_Min)) {
     stepper_Min.moveTo(initial_homing);
     stepper_Min.run();
@@ -205,6 +218,30 @@ void home_Min() {
 }
 
 
+void checkSerial() {
+  if (Serial.available() > 0) //if something comes
+  {
+    receivedCommand = Serial.read(); // read the first character from the serial command
+
+    switch (receivedCommand) {
+      case 't':
+        Serial.println("show time");
+        showCorrectTimeFix();
+        break;
+      case 'b':
+        Serial.println("b");
+        break;
+      case 'h':
+        Serial.println("home");
+        home_Hr();
+        home_Min();
+        break;
+
+    }
+  }
+
+}
+
 void inputTest() {
   while (Serial.available()) {
     Travel_Min = Serial.parseInt();
@@ -219,7 +256,6 @@ void inputTest() {
     }
   }
 
-
   if ((stepper_Min.distanceToGo() != 0 )) {
     Serial.print("moving  ");
     stepper_Min.run();
@@ -230,15 +266,14 @@ void inputTest() {
     move_finished = 1;
   }
 
-  //  // bounce around a position
-  //  if (stepper_Hr.distanceToGo() == 0) {
-  //    stepper_Hr.move(stepper_Hr.currentPosition() * 0.5);
-  //  }
-  //
 }
 
 
+void showCorrectTimeFix() {
+  stepper_Hr.moveTo((17 * 10));
+  stepper_Min.moveTo(-(17 * 40));
 
+}
 
 
 void chaseLoop() {
@@ -258,8 +293,7 @@ void chaseLoop() {
   }
 }
 
-
-void store(){
+void store() {
   //  if (!home_finished) {
   //    home_Hr();
   //    home_Min();
@@ -288,4 +322,4 @@ void store(){
   //    stepper_Hr.run();
   //  }
 
-  }
+}
