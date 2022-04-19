@@ -40,17 +40,17 @@ int previous_b = 0;
 
 //stepper motor steps & angles
 int stepsToTake = 128; //16*64=1024
-int fullRevolution = 1080;
-int angle_Unit = fullRevolution/60;
+int fullRevolution = 1024;
+int stepToTake_Angle = fullRevolution / 60;
 
-int moveAngle_Hr;
-int moveAngle_Min;
+int anglePosition_Hr;
+int anglePosition_Min;
 
 #define hallPin_Hr  15    // 28BYJ48 pin 3
 #define hallPin_Min  4    // 28BYJ48 pin 4
 
-long Travel_Hr;  // Used to store the value entered in the Serial Monitor
-long Travel_Min;
+long travel_Hr;  // Used to store the value entered in the Serial Monitor
+long travel_Min;
 bool home_finished = true;
 long initial_homing = 1;
 int move_finished = 1;
@@ -144,8 +144,8 @@ void setup() {
 
 void loop() {
   //input in serial monitor to test movement
-    inputTest();
-//  checkSerial();
+//  inputTest();
+  checkSerial();
 //  stepper_Hr.run();
 //  stepper_Min.run();
 }
@@ -163,8 +163,8 @@ void home_Hr() {
   }
 
   stepper_Hr.setCurrentPosition(0);
-  stepper_Hr.setMaxSpeed (400.0);
-  stepper_Hr.setSpeed(200);
+  stepper_Hr.setMaxSpeed (1000.0);
+  stepper_Hr.setSpeed(800);
   stepper_Hr.setAcceleration(200.0);
   initial_homing = -1;
   delay(500);
@@ -195,7 +195,6 @@ void home_Min() {
     initial_homing--;  // Hand_Hr will move CCW
     stepper_Min.run();
   }
-
   stepper_Min.setCurrentPosition(0);
   stepper_Min.setMaxSpeed (400.0);
   stepper_Min.setSpeed(200);
@@ -209,14 +208,12 @@ void home_Min() {
     Serial.print("initial_homing:  ");
     Serial.println(initial_homing);
   }
-
   stepper_Min.setCurrentPosition(0);
   Serial.println("----- Min Homed -----");
   stepper_Min.setMaxSpeed (1000.0);
   stepper_Min.setSpeed(800);
   stepper_Min.setAcceleration(400.0);
 }
-
 
 void checkSerial() {
   if (Serial.available() > 0) //if something comes
@@ -225,12 +222,13 @@ void checkSerial() {
 
     switch (receivedCommand) {
       case 't':
-        Serial.println("show time");
         showCorrectTimeFix();
         break;
-      case 'b':
-        Serial.println("b");
+
+      case 'm':
+        moveToInput();
         break;
+
       case 'h':
         Serial.println("home");
         home_Hr();
@@ -242,18 +240,52 @@ void checkSerial() {
 
 }
 
+void moveToInput() {
+  Serial.println("----- move to input, start");
+  //set stepper motors speed
+  stepper_Min.setMaxSpeed (1000.0);
+  stepper_Min.setSpeed(800);
+  stepper_Min.setAcceleration(200.0);
+  stepper_Hr.setMaxSpeed(1000.0);
+  stepper_Hr.setSpeed(800);
+  stepper_Hr.setAcceleration(200.0);
+
+  //deal with the input
+  travel_Min = Serial.parseInt();
+  move_finished = 0;
+  Serial.print("Moving Min Stepper into position:  ");
+  Serial.println(travel_Min);
+  stepper_Min.moveTo(travel_Min);
+  delay(500);
+  
+  if ((stepper_Min.distanceToGo() != 0 )) {
+    Serial.print("moving  ");
+    stepper_Min.run();
+  }
+
+  if ( (move_finished == 0) && (stepper_Min.distanceToGo() == 0) ) {
+    Serial.println("--Completed--");
+    move_finished = 1;
+    stepper_Min.setCurrentPosition(posCal(stepper_Min.currentPosition()));    //re calculate hand position 
+    Serial.println("cuurent posistion"); 
+    Serial.print(stepper_Min.currentPosition());
+  }
+  
+
+  Serial.println("----- move to input, done");
+
+}
+
+
 void inputTest() {
   while (Serial.available()) {
-    Travel_Min = Serial.parseInt();
-    if (Travel_Min != 0) {
-      move_finished = 0;
-      Serial.print("Moving Min Stepper into position:  ");
-      Serial.println(Travel_Min);
-      stepper_Min.moveTo(Travel_Min);
-      delay(500);
-    } else {
-      home_Min();
-    }
+    move_finished = 0;
+    travel_Min = Serial.parseInt();
+    Serial.print("Moving Min Stepper into position:  ");
+    Serial.println(travel_Min);
+    stepper_Min.moveTo(travel_Min);
+    delay(500);
+ 
   }
 
   if ((stepper_Min.distanceToGo() != 0 )) {
@@ -264,16 +296,44 @@ void inputTest() {
   if ( (move_finished == 0) && (stepper_Min.distanceToGo() == 0) ) {
     Serial.println("--Completed--");
     move_finished = 1;
+    //re calculate hand position 
+    stepper_Min.setCurrentPosition(posCal(stepper_Min.currentPosition()));
+    Serial.println("cuurent posistion");
+    Serial.print(stepper_Min.currentPosition());
   }
 
 }
 
 
 void showCorrectTimeFix() {
+  Serial.println("----- show correct time, Start-----");
   stepper_Hr.moveTo((17 * 10));
   stepper_Min.moveTo(-(17 * 40));
+  Serial.println("----- show correct time, Done-----");
 
 }
+
+//re calculate position to a minimum value with diection
+int posCal(int handPos) {
+
+  handPos = handPos % fullRevolution;
+  if (handPos >= 0 && handPos <= (fullRevolution / 2)) {
+    return handPos;
+  }
+  if (handPos > (fullRevolution / 2) && handPos <= fullRevolution) {
+    return handPos - fullRevolution;
+  }
+
+  if (handPos < 0 && handPos >= -(fullRevolution / 2)) {
+    return handPos;
+  }
+  if (handPos < (fullRevolution / 2) && handPos > -fullRevolution) {
+    return handPos + fullRevolution;
+  }
+
+}
+
+
 
 
 void chaseLoop() {
