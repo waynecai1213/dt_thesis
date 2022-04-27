@@ -228,21 +228,21 @@ void showCorrectTimeFix()
 {
   Serial.println("----- show correct time, Start-----");
   stepper_Hr.moveTo(abs(hours * STEPS_PER_HR - fullRevolution / 2));
-  // stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
+  stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
   
 
-  // if ((stepper_Min.distanceToGo() == 0) && (stepper_Hr.distanceToGo() == 0))
-  // {
-  //   stepper_Hr.setCurrentPosition(posCal(stepper_Hr.currentPosition())); // re calculate hand position
-  //   Serial.print("Hr current posistion");
-  //   Serial.println(stepper_Hr.currentPosition());
+  if ((stepper_Min.distanceToGo() == 0) && (stepper_Hr.distanceToGo() == 0))
+  {
+    stepper_Hr.setCurrentPosition(posCal(stepper_Hr.currentPosition())); // re calculate hand position
+    Serial.print("Hr current posistion");
+    Serial.println(stepper_Hr.currentPosition());
 
-  //   stepper_Min.setCurrentPosition(posCal(stepper_Min.currentPosition())); // re calculate hand position
-  //   Serial.print("Min current posistion");
-  //   Serial.println(stepper_Min.currentPosition());
-  //   clock_state = 'i';
-  //   Serial.println("----- show correct time, Done-----");
-  // }
+    stepper_Min.setCurrentPosition(posCal(stepper_Min.currentPosition())); // re calculate hand position
+    Serial.print("Min current posistion");
+    Serial.println(stepper_Min.currentPosition());
+    clock_state = 'i';
+    Serial.println("----- show correct time, Done-----");
+  }
 }
 
 void moveToInput()
