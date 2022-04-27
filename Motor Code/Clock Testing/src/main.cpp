@@ -74,41 +74,41 @@ char receivedCommand;             // character for commands
 char clock_state;
 
 // callback function that will be executed when data is *received*
-// void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
-// {
-//   memcpy(&rotaryData, incomingData, sizeof(rotaryData));
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+  memcpy(&rotaryData, incomingData, sizeof(rotaryData));
 
-//   Serial.print("rotaryData_a: ");
-//   Serial.print(rotaryData.a);
-//   Serial.print("   |   ");
-//   Serial.print("rotaryData_b: ");
-//   Serial.println(rotaryData.b);
-//   int val_a = rotaryData.a;
-//   int val_b = rotaryData.b;
+  Serial.print("rotaryData_a: ");
+  Serial.print(rotaryData.a);
+  Serial.print("   |   ");
+  Serial.print("rotaryData_b: ");
+  Serial.println(rotaryData.b);
+  int val_a = rotaryData.a;
+  int val_b = rotaryData.b;
 
-//   //   Serial.println(val-previous);
+  //   Serial.println(val-previous);
 
-//   if (val_a != previous_a && val_a != 0 && val_a != 32)
-//   {
+  if (val_a != previous_a && val_a != 0 && val_a != 32)
+  {
 
-//     stepper_Hr.move(stepsToTake * (val_a - previous_a));
-//     //    if(val_a ==0){
-//     //      stepper_Hr.moveTo(stepsToTake*(val_a-previous_a));
-//     //      }
-//   }
+    stepper_Hr.move(stepsToTake * (val_a - previous_a));
+    //    if(val_a ==0){
+    //      stepper_Hr.moveTo(stepsToTake*(val_a-previous_a));
+    //      }
+  }
 
-//   if (val_b != previous_b && val_b != 0 && val_b != 32)
-//   {
-//     stepper_Min.move(-stepsToTake * (val_b - previous_b));
-//   }
+  if (val_b != previous_b && val_b != 0 && val_b != 32)
+  {
+    stepper_Min.move(-stepsToTake * (val_b - previous_b));
+  }
 
-//   previous_a = val_a;
-//   previous_b = val_b;
+  previous_a = val_a;
+  previous_b = val_b;
 
-//   //  stepper_Hr.run();
-//   //  stepper_Min.run();
-//   //
-// }
+  //  stepper_Hr.run();
+  //  stepper_Min.run();
+  //
+}
 
 // re calculate position to a minimum value with diection
 int posCal(int handPos)
