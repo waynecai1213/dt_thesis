@@ -35,10 +35,6 @@ AccelStepper stepper_Min(stepsPerRevolution, motorPin1, motorPin3, motorPin2, mo
 AccelStepper stepper_Hr(stepsPerRevolution, motorPin5, motorPin7, motorPin6, motorPin8);
 // max speed: 660
 
-// the previous reading
-int previous_a = 0;
-int previous_b = 0;
-
 // stepper motor steps & angles
 int stepsToTake = 128; // 16*64=1024; one full revolution = 1024;
 int fullRevolution = 1024;
@@ -46,6 +42,7 @@ int stepToTake_Angle = fullRevolution / 60;
 #define STEPS_PER_HR 85  // 1024/12
 #define STEPS_PER_MIN 17 // 1024/60
 
+//real time parameters
 long hours = 4;
 long minutes = 50;
 
@@ -73,42 +70,6 @@ bool newData, runallowed = false; // booleans for new data from serial, and runa
 char receivedCommand;             // character for commands
 char clock_state;
 
-// callback function that will be executed when data is *received*
-void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
-{
-  memcpy(&rotaryData, incomingData, sizeof(rotaryData));
-
-  Serial.print("rotaryData_a: ");
-  Serial.print(rotaryData.a);
-  Serial.print("   |   ");
-  Serial.print("rotaryData_b: ");
-  Serial.println(rotaryData.b);
-  int val_a = rotaryData.a;
-  int val_b = rotaryData.b;
-
-  //   Serial.println(val-previous);
-
-  if (val_a != previous_a && val_a != 0 && val_a != 32)
-  {
-
-    stepper_Hr.move(stepsToTake * (val_a - previous_a));
-    //    if(val_a ==0){
-    //      stepper_Hr.moveTo(stepsToTake*(val_a-previous_a));
-    //      }
-  }
-
-  if (val_b != previous_b && val_b != 0 && val_b != 32)
-  {
-    stepper_Min.move(-stepsToTake * (val_b - previous_b));
-  }
-
-  previous_a = val_a;
-  previous_b = val_b;
-
-  //  stepper_Hr.run();
-  //  stepper_Min.run();
-  //
-}
 
 // re calculate position to a minimum value with diection
 int posCal(int handPos)
@@ -411,20 +372,6 @@ void setup()
 
   // Initialize Serial Monitor
   Serial.begin(115200);
-
-  // Set device as a Wi-Fi Station
-  // WiFi.mode(WIFI_STA);
-
-  // Init ESP-NOW
-  // if (esp_now_init() != ESP_OK)
-  // {
-  //   Serial.println("Error initializing ESP-NOW");
-  //   return;
-  // }
-
-  // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
-  // esp_now_register_recv_cb(OnDataRecv);
 
   /*Homing Stepper Motos*/
   home_Hr();
