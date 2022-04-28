@@ -4,17 +4,12 @@
 //#include <Stepper.h>
 #include <AccelStepper.h>
 
-//**// config ESP-NOW connectino
-// Structure example to receive data
-// Must match the sender structure
-typedef struct struct_message
-{
-  int a;
-  int b;
-} struct_message;
+//my own library
+#include <Homing.h>
+#include <LED_Test.h>
 
-// Create a struct_message called rotaryData
-struct_message rotaryData;
+LED_Test LED1(13, 300);
+LED_Test LED2(12, 30);
 
 //**// config stepper motors
 const int stepsPerRevolution = 4; // change this to fit the number of steps per revolution
@@ -30,9 +25,18 @@ const int stepsPerRevolution = 4; // change this to fit the number of steps per 
 #define motorPin7 33 // 28BYJ48 pin 3
 #define motorPin8 32 // 28BYJ48 pin 4
 
+
+#define hallPin_Hr 15 // 28BYJ48 pin 3
+#define hallPin_Min 4 // 28BYJ48 pin 4
+
 // initialize the stepper library
-AccelStepper stepper_Min(stepsPerRevolution, motorPin1, motorPin3, motorPin2, motorPin4);
 AccelStepper stepper_Hr(stepsPerRevolution, motorPin5, motorPin7, motorPin6, motorPin8);
+AccelStepper stepper_Min(stepsPerRevolution, motorPin1, motorPin3, motorPin2, motorPin4);
+
+//for homing, 1/-1 represent rotation direction
+Homing home_stepper_Hr(hallPin_Hr,stepper_Hr,1);
+Homing home_stepper_Min(hallPin_Min,stepper_Min,-1);
+
 // max speed: 660
 
 // stepper motor steps & angles
@@ -52,9 +56,6 @@ long minutes = 50;
 int anglePosition_Hr;
 int anglePosition_Min;
 
-#define hallPin_Hr 15 // 28BYJ48 pin 3
-#define hallPin_Min 4 // 28BYJ48 pin 4
-
 long travel_Hr; // Used to store the value entered in the Serial Monitor
 long travel_Min;
 bool home_finished = true;
@@ -69,6 +70,8 @@ uint8_t functionIndex = 0;
 bool newData, runallowed = false; // booleans for new data from serial, and runallowed flag
 char receivedCommand;             // character for commands
 char clock_state;
+
+
 
 
 // re calculate position to a minimum value with diection
@@ -95,79 +98,6 @@ int posCal(int handPos)
   }
 }
 
-void home_Hr()
-{
-  Serial.print("hallPin_Hr:  ");
-  Serial.println(digitalRead(hallPin_Hr));
-  Serial.println("Hr_initial_homing");
-  while (digitalRead(hallPin_Hr))
-  {
-    //    Serial.print("Hr_initial_homing:  ");
-    //    Serial.println(initial_homing);
-    stepper_Hr.moveTo(initial_homing);
-    initial_homing++; // Hand_Hr will move CCW
-    stepper_Hr.run();
-  }
-
-  stepper_Hr.setCurrentPosition(0);
-  stepper_Hr.setMaxSpeed(600.0);
-  stepper_Hr.setSpeed(400);
-  stepper_Hr.setAcceleration(400.0);
-  initial_homing = -1;
-  delay(500);
-
-  while (!digitalRead(hallPin_Hr))
-  {
-    stepper_Hr.moveTo(initial_homing);
-    stepper_Hr.run();
-    initial_homing--;
-    Serial.print("Hr_initial_homing:  ");
-    Serial.println(initial_homing);
-  }
-
-  stepper_Hr.setCurrentPosition(0);
-  Serial.println("----- Hr Homed -----");
-  stepper_Hr.setMaxSpeed(800.0);
-  stepper_Hr.setSpeed(600);
-  stepper_Hr.setAcceleration(400.0);
-}
-
-void home_Min()
-{
-  Serial.print("hallPin_Hr:  ");
-  Serial.println(digitalRead(hallPin_Min));
-  Serial.println("Min_initial_homing");
-  initial_homing = -1;
-  while (digitalRead(hallPin_Min))
-  {
-    //    Serial.print("Min_initial_homing:  ");
-    //    Serial.println(initial_homing);
-    stepper_Min.moveTo(initial_homing);
-    initial_homing--; // Hand_Hr will move CCW
-    stepper_Min.run();
-  }
-
-  stepper_Min.setCurrentPosition(0);
-  stepper_Min.setMaxSpeed(600.0);
-  stepper_Min.setSpeed(400);
-  stepper_Min.setAcceleration(400.0);
-  initial_homing = 1;
-  delay(500);
-
-  while (!digitalRead(hallPin_Min))
-  {
-    stepper_Min.moveTo(initial_homing);
-    stepper_Min.run();
-    initial_homing++;
-    Serial.print("initial_homing:  ");
-    Serial.println(initial_homing);
-  }
-  stepper_Min.setCurrentPosition(0);
-  Serial.println("----- Min Homed -----");
-  stepper_Min.setMaxSpeed(800.0);
-  stepper_Min.setSpeed(600);
-  stepper_Min.setAcceleration(400.0);
-}
 
 void goNut()
 {
@@ -332,8 +262,8 @@ void checkSerial()
 
     case 'h':
       Serial.println("home");
-      home_Hr();
-      home_Min();
+      // home_Hr();
+      // home_Min();
       break;
 
     case 'd':
@@ -360,22 +290,16 @@ void setup()
   pinMode(hallPin_Hr, INPUT);
   pinMode(hallPin_Min, INPUT);
 
-  // set stepper motors speed 
-  //here maxspeed is the one that decide the speed it looks
-  stepper_Hr.setMaxSpeed(300.0);
-  stepper_Hr.setSpeed(0);
-  stepper_Hr.setAcceleration(20.0);
-
-  stepper_Min.setMaxSpeed(300.0);
-  stepper_Min.setSpeed(0);
-  stepper_Min.setAcceleration(20.0);
-
   // Initialize Serial Monitor
   Serial.begin(115200);
 
   /*Homing Stepper Motos*/
-  home_Hr();
-  home_Min();
+  // home_Hr();
+  // home_Min();
+  home_stepper_Hr.runHome();
+  home_stepper_Min.runHome();
+
+
 }
 
 void loop()
@@ -383,9 +307,9 @@ void loop()
   // input in serial monitor to test movement
   //   inputTest();
   // checkSerial();
-  if (millis()>=5000){
-    clock_state='t';
-  }
+  // if (millis()>=5000){
+  //   clock_state='t';
+  // }
 
   switch (clock_state)
   {
