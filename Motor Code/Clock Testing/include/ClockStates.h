@@ -47,8 +47,7 @@ int input_Speed;
 
 int move_finished = 1;
 
-bool isMove = false;
-bool isDrop = false;
+
 bool isGoNut = false;
 uint8_t functionIndex = 0;
 
@@ -83,6 +82,8 @@ int posCal(int handPos)
 // re calculate hand position
 void reCalPos()
 {
+    
+    // re calculate hand position when reaching target position
     if ((stepper_Min.distanceToGo() == 0) && (stepper_Hr.distanceToGo() == 0))
     {
         stepper_Hr.setCurrentPosition(posCal(stepper_Hr.currentPosition())); // re calculate hand position
@@ -115,6 +116,7 @@ void moveToInput()
 
 void dropHands()
 {
+   
     float dropFactor = 0.5;
 
     if ((stepper_Hr.distanceToGo() == 0))
