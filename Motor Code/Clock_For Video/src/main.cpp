@@ -77,11 +77,45 @@ void checkSerial()
 
       // set
       stepper_Hr.setMaxSpeed(1000.0);
-      stepper_Hr.setAcceleration(1000.0);
+      stepper_Hr.setAcceleration(1500.0);
 
       stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(1000.0);
+      stepper_Min.setAcceleration(1500.0);
       clock_state = 'd';
+      break;
+
+      // drop hands with anticipation
+    case 'D':
+      // stop the hands and recalculate position
+      stepper_Hr.setMaxSpeed(1000.0);
+      stepper_Hr.setAcceleration(3000.0);
+
+      stepper_Min.setMaxSpeed(1000.0);
+      stepper_Min.setAcceleration(3000.0);
+      if (stepper_Hr.currentPosition() > 0)
+      {
+        stepper_Hr.move(150);
+        stepper_Min.move(150);
+      }
+      else
+      {
+        stepper_Hr.move(-150);
+        stepper_Min.move(-150);
+      }
+
+      while (stepper_Hr.distanceToGo() != 0 || stepper_Min.distanceToGo() != 0)
+      {
+        stepper_Hr.run();
+        stepper_Min.run();
+      }
+      // stepper_Hr.stop();
+      // stepper_Min.stop();
+      // stepper_Hr.runToPosition();
+      // stepper_Min.runToPosition();
+
+      // set
+
+      clock_state = 'D';
       break;
 
       // small bounce b/w
@@ -129,7 +163,6 @@ void checkSerial()
       stepper_Min.moveTo(travel_Min);
       break;
 
-
     case 'n':
       clock_state = 'n';
       input_Speed = Serial.parseInt();
@@ -145,7 +178,6 @@ void checkSerial()
       stepper_Hr.setSpeed(input_Speed);
       stepper_Min.setSpeed(-input_Speed);
       break;
-
 
     case 's':
       input_Speed = Serial.parseInt();
@@ -171,7 +203,7 @@ void checkSerial()
       clock_state = 'g';
       break;
 
-  //Greeting! waving hands
+      // Greeting! waving hands
     case 'G':
       stepper_Min.setMaxSpeed(1000.0);
       stepper_Min.setAcceleration(800.0);
@@ -184,11 +216,11 @@ void checkSerial()
       clock_state = 'G';
       break;
 
-      //Bye-Bye
-        case 'B':
+      // Bye-Bye
+    case 'B':
       stepper_Min.setMaxSpeed(1000.0);
       stepper_Min.setAcceleration(800.0);
-      stepper_Min.runToNewPosition(260);
+      stepper_Min.runToNewPosition(400);
 
       stepper_Hr.setMaxSpeed(800.0);
       stepper_Hr.setAcceleration(600.0);
@@ -196,7 +228,6 @@ void checkSerial()
 
       clock_state = 'B';
       break;
-
     }
   }
 }
@@ -213,6 +244,8 @@ void setup()
   home_stepper_Hr.runHome();
   home_stepper_Min.runHome();
 }
+
+/*************************************************************************/
 
 void loop()
 {
@@ -276,6 +309,13 @@ void loop()
     previousCommand = 'd';
     break;
 
+  case 'D':
+    dropHands();
+    stepper_Hr.run();
+    stepper_Min.run();
+    previousCommand = 'd';
+    break;
+
   case 'l':
     reCalPos();
     stepper_Hr.run();
@@ -327,7 +367,6 @@ void loop()
     stepper_Hr.run();
     break;
 
-
   case 'G':
     if (stepper_Min.distanceToGo() == 0)
     {
@@ -356,12 +395,19 @@ void loop()
     break;
 
   case 'B':
-    
-
+    if (stepper_Min.distanceToGo() == 0)
+    {
+      // delay(50);
+      greetingDir_Min = greetingDir_Min * (-1);
+      // Random change to speed, position and acceleration
+      // Make sure we dont get 0 speed or accelerations
+      stepper_Min.moveTo((rand() % 20 + 80) * greetingDir_Min + 400);
+      // stepper_Min.setMaxSpeed(rand() % 100+ 400);
+      // stepper_Min.setAcceleration((rand() % 100+100) + 200);
+    }
     stepper_Min.run();
     stepper_Hr.run();
     break;
-
 
   default:
     Serial.print("clock_state:");
