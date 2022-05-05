@@ -52,7 +52,7 @@ bool isGoNut = false;
 uint8_t functionIndex = 0;
 
 bool newData, runallowed = false; // booleans for new data from serial, and runallowed flag
-char receivedCommand;             // character for commands
+
 
 
 
