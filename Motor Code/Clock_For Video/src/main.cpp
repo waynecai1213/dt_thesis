@@ -46,8 +46,15 @@ int greetingDir_Min = 1;
 char clock_state; // move this variable to "ClockStates.h" would cause the variable be reset
 
 // for real time
-long minuteMillis = 3000;
+long minuteMillis = 15000;
 long previousMillis;
+
+void switchCommand(){
+
+
+}
+
+
 
 void checkAPInput()
 {
@@ -288,16 +295,17 @@ void checkSerial()
       home_stepper_Hr.runHome();
       home_stepper_Min.runHome();
       Serial.println("done homing");
+
       break;
 
     // initiate real time mode
     case 'i': // h > i
       Serial.println("----- show correct time, Start-----");
       stepper_Hr.setMaxSpeed(600.0);
-      stepper_Hr.setAcceleration(400.0);
+      stepper_Hr.setAcceleration(600.0);
 
-      stepper_Min.setMaxSpeed(600.0);
-      stepper_Min.setAcceleration(400.0);
+      stepper_Min.setMaxSpeed(800.0);
+      stepper_Min.setAcceleration(800.0);
 
       stepper_Hr.moveTo(abs(hours * STEPS_PER_HR - fullRevolution / 2));
       stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
@@ -324,10 +332,10 @@ void checkSerial()
 
       // set
       stepper_Hr.setMaxSpeed(1000.0);
-      stepper_Hr.setAcceleration(1500.0);
+      stepper_Hr.setAcceleration(2000.0);
 
       stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(1500.0);
+      stepper_Min.setAcceleration(3000.0);
       clock_state = 'd';
       break;
 
@@ -452,12 +460,13 @@ void checkSerial()
 
       // Greeting! waving hands
     case 'G':
+
       stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(800.0);
+      stepper_Min.setAcceleration(2000.0);
       stepper_Min.runToNewPosition(260);
 
       stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(600.0);
+      stepper_Hr.setAcceleration(1500.0);
       stepper_Hr.runToNewPosition(260);
 
       clock_state = 'G';
@@ -466,11 +475,11 @@ void checkSerial()
       // Bye-Bye
     case 'B':
       stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(800.0);
+      stepper_Min.setAcceleration(2000.0);
       stepper_Min.runToNewPosition(400);
 
       stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(600.0);
+      stepper_Hr.setAcceleration(1500.0);
       stepper_Hr.runToNewPosition(0);
 
       clock_state = 'B';
@@ -507,8 +516,8 @@ void setup()
 
 void loop()
 {
-  checkAPInput();
-  // checkSerial();
+  // checkAPInput();
+  checkSerial();
 
   switch (clock_state)
   {
