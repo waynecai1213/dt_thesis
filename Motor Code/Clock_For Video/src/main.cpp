@@ -46,12 +46,12 @@ int greetingDir_Min = 1;
 char clock_state; // move this variable to "ClockStates.h" would cause the variable be reset
 
 // for real time
-long minuteMillis = 15000;
+long minuteMillis = 3000;
 long previousMillis;
 
 // real time parameters
-long hours = 4;
-long minutes = 45;
+long hours = 1;
+long minutes = 15;
 
 
 void switchCommand(){
@@ -66,6 +66,15 @@ void switchCommand(){
         Serial.println("start homing");
         home_stepper_Hr.runHome();
         home_stepper_Min.runHome();
+
+        stepper_Hr.setCurrentPosition(0);
+        stepper_Hr.setMaxSpeed(600.0);
+        stepper_Hr.setAcceleration(400.0);
+
+        stepper_Min.setCurrentPosition(0);
+        stepper_Min.setMaxSpeed(600.0);
+        stepper_Min.setAcceleration(400.0);
+
         Serial.println("done homing");   
         clock_state = 'h';
         break;
@@ -76,11 +85,21 @@ void switchCommand(){
         stepper_Hr.setMaxSpeed(600.0);
         stepper_Hr.setAcceleration(1200.0);
 
-        stepper_Min.setMaxSpeed(600.0);
+        stepper_Min.setMaxSpeed(800.0);
         stepper_Min.setAcceleration(2000.0);
+        
+        stepper_Hr.move(100);
+        stepper_Min.move(100);
+        while (stepper_Hr.distanceToGo() != 0 || stepper_Min.distanceToGo() != 0)
+        {
+          stepper_Hr.run();
+          stepper_Min.run();
+        }
+        delay(100);
 
         stepper_Hr.moveTo(abs(hours * STEPS_PER_HR - fullRevolution / 2));
         stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
+
         clock_state = 'i';
         
   
@@ -115,13 +134,11 @@ void switchCommand(){
 
         // drop hands with anticipation
       case 'D':
-
-          hours=5;
           minutes++;
 
         // stop the hands and recalculate position
         stepper_Hr.setMaxSpeed(1000.0);
-        stepper_Hr.setAcceleration(2400.0);
+        stepper_Hr.setAcceleration(3000.0);
 
         stepper_Min.setMaxSpeed(1000.0);
         stepper_Min.setAcceleration(4000.0);
@@ -135,12 +152,13 @@ void switchCommand(){
           stepper_Hr.move(-150);
           stepper_Min.move(-150);
         }
-
+  
         while (stepper_Hr.distanceToGo() != 0 || stepper_Min.distanceToGo() != 0)
         {
           stepper_Hr.run();
           stepper_Min.run();
         }
+         delay(100);
         // stepper_Hr.stop();
         // stepper_Min.stop();
         // stepper_Hr.runToPosition();
@@ -247,8 +265,8 @@ void switchCommand(){
         stepper_Hr.setAcceleration(1200.0);
         // stepper_Hr.runToNewPosition(260);
 
-             stepper_Min.moveTo(260);
-                 stepper_Hr.moveTo(260);
+        stepper_Min.moveTo(120);
+         stepper_Hr.moveTo(100);
 
         clock_state = 'G';
         break;
@@ -329,8 +347,8 @@ void setup()
 
 void loop()
 {
-  checkAPInput();
-  // checkSerial();
+  // checkAPInput();
+  checkSerial();
 
   switch (clock_state)
   {
@@ -340,6 +358,7 @@ void loop()
   case 'i':
     // initiate real time
     reCalPos();
+
     stepper_Hr.run();
     stepper_Min.run();
     previousCommand = 'i';
@@ -442,6 +461,7 @@ void loop()
     break;
 
   case 'G':
+
     if (stepper_Min.distanceToGo() == 0)
     {
       // delay(50);
