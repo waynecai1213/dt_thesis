@@ -32,9 +32,7 @@ int stepToTake_Angle = fullRevolution / 60;
 #define STEPS_PER_HR 85  // 1024/12
 #define STEPS_PER_MIN 17 // 1024/60
 
-// real time parameters
-long hours = 4;
-long minutes = 45;
+
 
 // -  Hand_Hr will move CW
 // +  Hand_Min will move CW
@@ -87,7 +85,7 @@ void reCalPos()
     // re calculate hand position when reaching target position
     if (stepper_Min.distanceToGo() == 0)
     {
-         Serial.println("recalculate Current Position_Min");
+        //  Serial.println("recalculate Current Position_Min");
         stepper_Min.setCurrentPosition(posCal(stepper_Min.currentPosition())); // re calculate hand position
         // Serial.print("Min current posistion");
         // Serial.println(stepper_Min.currentPosition());
@@ -96,7 +94,7 @@ void reCalPos()
         // Serial.println("----- show correct time, Done-----");
     }
     if (stepper_Hr.distanceToGo() == 0){
-         Serial.println("recalculate Current Position_Hr");
+        //  Serial.println("recalculate Current Position_Hr");
          stepper_Hr.setCurrentPosition(posCal(stepper_Hr.currentPosition())); // re calculate hand position
         // Serial.print("Hr current posistion");
         // Serial.println(stepper_Hr.currentPosition());

@@ -49,26 +49,13 @@ char clock_state; // move this variable to "ClockStates.h" would cause the varia
 long minuteMillis = 15000;
 long previousMillis;
 
+// real time parameters
+long hours = 4;
+long minutes = 45;
+
+
 void switchCommand(){
-
-
-}
-
-
-
-void checkAPInput()
-{
-  WiFiClient client = server.available();
-  if (client)
-  {
-    String request = client.readStringUntil('\r');
-    if (request.indexOf("Input_State") != -1)
-    {
-      Serial.print("receive AP input: ");
-      receivedCommand = request.charAt(request.lastIndexOf("=") + 1);
-      Serial.println(receivedCommand);
-
-      switch (receivedCommand)
+    switch (receivedCommand)
       {
       // homing
       case 'h':
@@ -76,25 +63,27 @@ void checkAPInput()
         // stepper_Min.stop();
         // stepper_Hr.runToPosition();
         // stepper_Min.runToPosition();
-
         Serial.println("start homing");
         home_stepper_Hr.runHome();
         home_stepper_Min.runHome();
-        Serial.println("done homing");
+        Serial.println("done homing");   
+        clock_state = 'h';
         break;
 
       // initiate real time mode
       case 'i': // h > i
         Serial.println("----- show correct time, Start-----");
         stepper_Hr.setMaxSpeed(600.0);
-        stepper_Hr.setAcceleration(400.0);
+        stepper_Hr.setAcceleration(1200.0);
 
         stepper_Min.setMaxSpeed(600.0);
-        stepper_Min.setAcceleration(400.0);
+        stepper_Min.setAcceleration(2000.0);
 
         stepper_Hr.moveTo(abs(hours * STEPS_PER_HR - fullRevolution / 2));
         stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
         clock_state = 'i';
+        
+  
         break;
 
       // move minute hand as real time ... Speed up ...
@@ -115,23 +104,27 @@ void checkAPInput()
         stepper_Min.runToPosition();
         reCalPos();
 
-        // set
-        stepper_Hr.setMaxSpeed(1000.0);
-        stepper_Hr.setAcceleration(1500.0);
+          // set
+          stepper_Hr.setMaxSpeed(1000.0);
+          stepper_Hr.setAcceleration(2000.0);
 
-        stepper_Min.setMaxSpeed(1000.0);
-        stepper_Min.setAcceleration(1500.0);
+          stepper_Min.setMaxSpeed(1000.0);
+          stepper_Min.setAcceleration(3000.0);
         clock_state = 'd';
         break;
 
         // drop hands with anticipation
       case 'D':
+
+          hours=5;
+          minutes++;
+
         // stop the hands and recalculate position
         stepper_Hr.setMaxSpeed(1000.0);
         stepper_Hr.setAcceleration(2400.0);
 
         stepper_Min.setMaxSpeed(1000.0);
-        stepper_Min.setAcceleration(2400.0);
+        stepper_Min.setAcceleration(4000.0);
         if (stepper_Hr.currentPosition() > 0)
         {
           stepper_Hr.move(150);
@@ -162,10 +155,10 @@ void checkAPInput()
       case 'b':
         // set
         stepper_Hr.setMaxSpeed(800.0);
-        stepper_Hr.setAcceleration(600.0);
+        stepper_Hr.setAcceleration(2000.0);
 
         stepper_Min.setMaxSpeed(800.0);
-        stepper_Min.setAcceleration(600.0);
+        stepper_Min.setAcceleration(2400.0);
         clock_state = 'b';
         stepper_Hr.moveTo(100);
         stepper_Min.moveTo(100);
@@ -246,29 +239,51 @@ void checkAPInput()
         // Greeting! waving hands
       case 'G':
         stepper_Min.setMaxSpeed(1000.0);
-        stepper_Min.setAcceleration(800.0);
-        stepper_Min.runToNewPosition(260);
+        stepper_Min.setAcceleration(2000.0);
+        // stepper_Min.runToNewPosition(260);
+        
 
         stepper_Hr.setMaxSpeed(800.0);
-        stepper_Hr.setAcceleration(600.0);
-        stepper_Hr.runToNewPosition(260);
+        stepper_Hr.setAcceleration(1200.0);
+        // stepper_Hr.runToNewPosition(260);
+
+             stepper_Min.moveTo(260);
+                 stepper_Hr.moveTo(260);
 
         clock_state = 'G';
         break;
 
         // Bye-Bye
-      case 'B':
-        stepper_Min.setMaxSpeed(1000.0);
-        stepper_Min.setAcceleration(800.0);
-        stepper_Min.runToNewPosition(400);
+       case 'B':
+          stepper_Min.setMaxSpeed(1000.0);
+          stepper_Min.setAcceleration(2000.0);
+          stepper_Min.moveTo(400);
 
-        stepper_Hr.setMaxSpeed(800.0);
-        stepper_Hr.setAcceleration(600.0);
-        stepper_Hr.runToNewPosition(0);
+          stepper_Hr.setMaxSpeed(800.0);
+          stepper_Hr.setAcceleration(1500.0);
+          stepper_Hr.moveTo(0);
 
-        clock_state = 'B';
-        break;
+          clock_state = 'B';
+          break;
       }
+
+}
+
+
+
+void checkAPInput()
+{
+  WiFiClient client = server.available();
+  if (client)
+  {
+    String request = client.readStringUntil('\r');
+    if (request.indexOf("Input_State") != -1)
+    {
+      Serial.print("receive AP input: ");
+      receivedCommand = request.charAt(request.lastIndexOf("=") + 1);
+      Serial.println(receivedCommand);
+      switchCommand();
+    
     }
     client.print(html);
     request = "";
@@ -281,210 +296,8 @@ void checkSerial()
   {
     Serial.println("receive serial input");
     receivedCommand = Serial.read(); // read the first character from the serial command
-
-    switch (receivedCommand)
-    {
-    // homing
-    case 'h':
-      stepper_Hr.stop();
-      stepper_Min.stop();
-      stepper_Hr.runToPosition();
-      stepper_Min.runToPosition();
-
-      Serial.println("start homing");
-      home_stepper_Hr.runHome();
-      home_stepper_Min.runHome();
-      Serial.println("done homing");
-
-      break;
-
-    // initiate real time mode
-    case 'i': // h > i
-      Serial.println("----- show correct time, Start-----");
-      stepper_Hr.setMaxSpeed(600.0);
-      stepper_Hr.setAcceleration(600.0);
-
-      stepper_Min.setMaxSpeed(800.0);
-      stepper_Min.setAcceleration(800.0);
-
-      stepper_Hr.moveTo(abs(hours * STEPS_PER_HR - fullRevolution / 2));
-      stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
-      clock_state = 'i';
-      break;
-
-    // move minute hand as real time ... Speed up ...
-    case 't': //
-      Serial.println("----- Move minute hand as real time -----");
-      previousMillis = millis();
-      minutes++;
-      stepper_Min.moveTo((minutes * STEPS_PER_MIN - fullRevolution / 2));
-      clock_state = 't';
-      break;
-
-    // drop hands
-    case 'd':
-      // stop the hands and recalculate position
-      stepper_Hr.stop();
-      stepper_Min.stop();
-      stepper_Hr.runToPosition();
-      stepper_Min.runToPosition();
-      reCalPos();
-
-      // set
-      stepper_Hr.setMaxSpeed(1000.0);
-      stepper_Hr.setAcceleration(2000.0);
-
-      stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(3000.0);
-      clock_state = 'd';
-      break;
-
-      // drop hands with anticipation
-    case 'D':
-      // stop the hands and recalculate position
-      stepper_Hr.setMaxSpeed(1000.0);
-      stepper_Hr.setAcceleration(3000.0);
-
-      stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(3000.0);
-      if (stepper_Hr.currentPosition() > 0)
-      {
-        stepper_Hr.move(150);
-        stepper_Min.move(150);
-      }
-      else
-      {
-        stepper_Hr.move(-150);
-        stepper_Min.move(-150);
-      }
-
-      while (stepper_Hr.distanceToGo() != 0 || stepper_Min.distanceToGo() != 0)
-      {
-        stepper_Hr.run();
-        stepper_Min.run();
-      }
-      // stepper_Hr.stop();
-      // stepper_Min.stop();
-      // stepper_Hr.runToPosition();
-      // stepper_Min.runToPosition();
-
-      // set
-
-      clock_state = 'D';
-      break;
-
-      // small bounce b/w
-    case 'b':
-      // set
-      stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(600.0);
-
-      stepper_Min.setMaxSpeed(800.0);
-      stepper_Min.setAcceleration(600.0);
-      clock_state = 'b';
-      stepper_Hr.moveTo(100);
-      stepper_Min.moveTo(100);
-      break;
-
-      // rotate left
-    case 'l':
-      stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(600.0);
-      stepper_Min.setMaxSpeed(800.0);
-      stepper_Min.setAcceleration(600.0);
-
-      stepper_Hr.moveTo(fullRevolution);
-      stepper_Min.moveTo(fullRevolution);
-
-      break;
-
-    case 'm':
-      clock_state = 'm';
-      travel_Hr = Serial.parseInt();
-      travel_Min = Serial.parseInt();
-
-      Serial.print("Moving Hr Stepper into position:  ");
-      Serial.println(travel_Hr);
-      Serial.print("Moving Min Stepper into position:  ");
-      Serial.println(travel_Min);
-
-      stepper_Hr.setMaxSpeed(700);
-      stepper_Hr.setAcceleration(400);
-
-      stepper_Min.setMaxSpeed(700);
-      stepper_Min.setAcceleration(400);
-
-      stepper_Hr.moveTo(travel_Hr);
-      stepper_Min.moveTo(travel_Min);
-      break;
-
-    case 'n':
-      clock_state = 'n';
-      input_Speed = Serial.parseInt();
-      stepper_Hr.setMaxSpeed(700.0);
-      stepper_Hr.setAcceleration(600.0);
-
-      stepper_Min.setMaxSpeed(700.0);
-      stepper_Min.setAcceleration(600.0);
-
-      stepper_Hr.runToNewPosition(3 * STEPS_PER_HR);
-      stepper_Min.runToNewPosition(15 * STEPS_PER_MIN);
-
-      stepper_Hr.setSpeed(input_Speed);
-      stepper_Min.setSpeed(-input_Speed);
-      break;
-
-    case 's':
-      input_Speed = Serial.parseInt();
-      if (clock_state != 's')
-      {
-        stepper_Hr.setMaxSpeed(600.0);
-        stepper_Min.setMaxSpeed(600.0);
-      }
-      stepper_Hr.setSpeed(input_Speed);
-      stepper_Min.setSpeed(-input_Speed);
-      break;
-
-    //
-    case 'g':
-      stepper_Min.setMaxSpeed(600.0);
-      stepper_Min.setAcceleration(400.0);
-      stepper_Min.runToNewPosition(400);
-
-      stepper_Hr.setMaxSpeed(600.0);
-      stepper_Hr.setAcceleration(400.0);
-      stepper_Hr.runToNewPosition(400);
-
-      clock_state = 'g';
-      break;
-
-      // Greeting! waving hands
-    case 'G':
-
-      stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(2000.0);
-      stepper_Min.runToNewPosition(260);
-
-      stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(1500.0);
-      stepper_Hr.runToNewPosition(260);
-
-      clock_state = 'G';
-      break;
-
-      // Bye-Bye
-    case 'B':
-      stepper_Min.setMaxSpeed(1000.0);
-      stepper_Min.setAcceleration(2000.0);
-      stepper_Min.runToNewPosition(400);
-
-      stepper_Hr.setMaxSpeed(800.0);
-      stepper_Hr.setAcceleration(1500.0);
-      stepper_Hr.runToNewPosition(0);
-
-      clock_state = 'B';
-      break;
-    }
+    switchCommand();
+  
   }
 }
 
@@ -516,14 +329,14 @@ void setup()
 
 void loop()
 {
-  // checkAPInput();
-  checkSerial();
+  checkAPInput();
+  // checkSerial();
 
   switch (clock_state)
   {
   case 'h':
 
-    break;
+  break;
   case 'i':
     // initiate real time
     reCalPos();
@@ -574,7 +387,7 @@ void loop()
     dropHands();
     stepper_Hr.run();
     stepper_Min.run();
-    previousCommand = 'd';
+
     break;
 
   case 'l':
@@ -662,7 +475,7 @@ void loop()
       greetingDir_Min = greetingDir_Min * (-1);
       // Random change to speed, position and acceleration
       // Make sure we dont get 0 speed or accelerations
-      stepper_Min.moveTo((rand() % 20 + 80) * greetingDir_Min + 400);
+      stepper_Min.moveTo((rand() % 40 + 40) * greetingDir_Min + 400);
       // stepper_Min.setMaxSpeed(rand() % 100+ 400);
       // stepper_Min.setAcceleration((rand() % 100+100) + 200);
     }
