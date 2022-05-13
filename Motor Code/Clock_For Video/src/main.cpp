@@ -116,6 +116,7 @@ void switchCommand(){
 
       // drop hands
       case 'd':
+            minutes++;
         // stop the hands and recalculate position
         stepper_Hr.stop();
         stepper_Min.stop();
@@ -158,7 +159,7 @@ void switchCommand(){
           stepper_Hr.run();
           stepper_Min.run();
         }
-         delay(100);
+         delay(50);
         // stepper_Hr.stop();
         // stepper_Min.stop();
         // stepper_Hr.runToPosition();
@@ -172,14 +173,14 @@ void switchCommand(){
         // small bounce b/w
       case 'b':
         // set
-        stepper_Hr.setMaxSpeed(800.0);
-        stepper_Hr.setAcceleration(2000.0);
+        stepper_Hr.setMaxSpeed(700.0);
+        stepper_Hr.setAcceleration(1600.0);
 
-        stepper_Min.setMaxSpeed(800.0);
-        stepper_Min.setAcceleration(2400.0);
+        stepper_Min.setMaxSpeed(700.0);
+        stepper_Min.setAcceleration(2000.0);
         clock_state = 'b';
-        stepper_Hr.moveTo(100);
-        stepper_Min.moveTo(100);
+        stepper_Hr.moveTo(150);
+        stepper_Min.moveTo(150);
         break;
 
         // rotate left
@@ -323,15 +324,6 @@ void setup()
 {
   // Initialize Serial Monitor
   Serial.begin(115200);
-
-  // Hall sensor
-  pinMode(hallPin_Hr, INPUT);
-  pinMode(hallPin_Min, INPUT);
-
-  /*Homing Stepper Motos*/ // this homing function should go before Serial print and AP mode setting, otherwise it won't print or connect...
-  home_stepper_Hr.runHome();
-  home_stepper_Min.runHome();
-
   Serial.println("Serial Connnected");
 
   // Setting soft access point mode
@@ -341,14 +333,24 @@ void setup()
   Serial.print("AP IP address: ");
   Serial.println(IP); // http://192.168.4.1/
   server.begin();
+
+  /*Homing Stepper Motos*/ // this homing function should go before Serial print and AP mode setting, otherwise it won't print or connect...
+  home_stepper_Hr.runHome();
+  home_stepper_Min.runHome();
+
+   // Hall sensor
+  pinMode(hallPin_Hr, INPUT);
+  pinMode(hallPin_Min, INPUT);
+
+ 
 }
 
 /*************************************************************************/
 
 void loop()
 {
-  // checkAPInput();
-  checkSerial();
+  checkAPInput();
+  // checkSerial();
 
   switch (clock_state)
   {
