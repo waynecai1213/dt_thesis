@@ -78,7 +78,7 @@ void loop()
   // Serial.print("-touchRead: ");
   touchVal = senseSum / numRead;
   //     Serial.print("touchVal");
-  // Serial.println(touchVal);
+  Serial.println(touchVal);
   // get value using T0
 
   float sample[] = {touchVal};
