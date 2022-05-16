@@ -7,7 +7,9 @@ bool isRecording = false;
 Window window;
 Eloquent::ML::Port::Classifier clf;
 
-#define TOUCH_PIN T0 // GPIO 4
+// #define TOUCH_PIN T0 // GPIO 4
+#define TOUCH_PIN T8 // GPIO 33
+// #define TOUCH_PIN T9 // GPIO 32
 int touchVal;
 int preTouchVal;
 
@@ -77,7 +79,8 @@ void loop()
   }
   // Serial.print("-touchRead: ");
   touchVal = senseSum / numRead;
-  //     Serial.print("touchVal");
+  // touchVal = map(touchVal,20,42,7,16);
+      // Serial.print("touchVal");
   Serial.println(touchVal);
   // get value using T0
 
@@ -88,25 +91,25 @@ void loop()
     return;
 
   // predict gesture
-  delay(300);
+  // delay(300);
   
-  Serial.print(" --- Gesture: ");
-  Serial.println(clf.predictLabel(window.features));
+//   Serial.print(" --- Gesture: ");
+//   Serial.println(clf.predictLabel(window.features));
   
-  // Serial.println(clf.predictLabel(window.features));
-  currentGesture = clf.predictLabel(window.features); 
+//   // Serial.println(clf.predictLabel(window.features));
+//   currentGesture = clf.predictLabel(window.features); 
 
-if (previousGesture == currentGesture){
-    predictCounter++;
-}else{
-  predictCounter=0;
-}
-if (predictCounter >10){
-  Serial.print(" --------------- Trigger Gesture: ");
-  Serial.println(clf.predictLabel(window.features));
-}
-  /**************************/
-  previousGesture = currentGesture;
+// if (previousGesture == currentGesture){
+//     predictCounter++;
+// }else{
+//   predictCounter=0;
+// }
+// if (predictCounter >10){
+//   Serial.print(" --------------- Trigger Gesture: ");
+//   Serial.println(clf.predictLabel(window.features));
+// }
+//   /**************************/
+//   previousGesture = currentGesture;
 
 
 }
