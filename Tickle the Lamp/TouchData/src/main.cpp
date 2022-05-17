@@ -7,8 +7,14 @@ bool isRecording = false;
 Window window;
 Eloquent::ML::Port::Classifier clf;
 
+//ESP UART2
+#define RXD2 16
+#define TXD2 17
+
 // #define TOUCH_PIN T0 // GPIO 4
-#define TOUCH_PIN T8 // GPIO 33
+#define TOUCH_PIN T4 // GPIO 13 //the most stable one so fat
+// #define TOUCH_PIN T7 // GPIO 27
+// #define TOUCH_PIN T8 // GPIO 33
 // #define TOUCH_PIN T9 // GPIO 32
 int touchVal;
 int preTouchVal;
@@ -25,7 +31,9 @@ int numRead = 15;
 void setup()
 {
   Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
   delay(3000);
+
 }
 
 void loop()
@@ -33,13 +41,12 @@ void loop()
 
   if (Serial.available())
   {
+     Serial2.write(Serial.read());  
     // type "record" in serial monitor to start collecting data
     // type anything else to stop recording
     String command = Serial.readStringUntil('\n');
-
     Serial.print("Command: ");
     Serial.println(command);
-
     // if user sent "record", start recording
     if (command.equals("record"))
     {
@@ -51,7 +58,10 @@ void loop()
     {
       Serial.println("Stop recording...");
       isRecording = false;
+     
     }
+
+
   }
 
   if (isRecording)
