@@ -3,7 +3,11 @@
 
 char receivedCommand;
 
+#define RXD2 16
+#define TXD2 17
+
 // Confif LED
+#define DEFAULT_LED_PIN 2
 #define NUM_LEDS 15
 #define DATA_PIN 15
 #define LED_TYPE WS2812
@@ -81,8 +85,9 @@ if (patCounter == 6)
 
 void setup()
 {
-  pinMode(13, OUTPUT);
-  Serial.begin(9600);
+  pinMode(DEFAULT_LED_PIN, OUTPUT);
+  Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
   // initiate LED
   LEDS.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
@@ -98,28 +103,31 @@ void setup()
 void loop()
 {
 
-  if (Serial.available() > 0)
+  if (Serial2.available() > 0)
   {
-    functionIndex = Serial.read(); // gets one byte from serial buffer
+    functionIndex = Serial2.read(); // gets one byte from serial buffer
 
   }
 
   switch (functionIndex)
   {
   case 't':
-    digitalWrite(13, HIGH);
+    digitalWrite( DEFAULT_LED_PIN, HIGH);
     tickle();
 
     break;
 
   case 'f':
-    digitalWrite(13, LOW);
+    digitalWrite( DEFAULT_LED_PIN, LOW);
     break;
   
     case 'p':
-    digitalWrite(13, LOW);
+    digitalWrite( DEFAULT_LED_PIN, LOW);
      breath();
-
+      break;
+ case 'i':
+    digitalWrite( DEFAULT_LED_PIN, HIGH);
+     idle();
     break;
 
   default:
