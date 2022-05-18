@@ -132,12 +132,15 @@ void dropHands()
    
     float dropFactor = 0.5;
 
-    if ((stepper_Hr.distanceToGo() == 0))
+    if (stepper_Hr.distanceToGo() == 0)
     {
         if (abs(stepper_Hr.currentPosition()) >= 0.001)
         {
             stepper_Hr.moveTo(-(stepper_Hr.currentPosition()-60/*offset*/) * dropFactor);
         }
+    }else{
+        //    Serial.println("stepper_Hr runing");
+          stepper_Hr.run();
     }
 
     if (stepper_Min.distanceToGo() == 0)
@@ -146,10 +149,10 @@ void dropHands()
         {
             stepper_Min.moveTo(-(stepper_Min.currentPosition()+80/*offset*/) * dropFactor);
         }
+    }else{
+            //   Serial.println("stepper_Min runing");
+          stepper_Min.run();
     }
 
-    if ((abs(stepper_Hr.currentPosition()) <= 0.001) && (abs(stepper_Min.currentPosition()) <= 0.001))
-    {
-        // clock_state = 'X';
-    }
+ 
 }

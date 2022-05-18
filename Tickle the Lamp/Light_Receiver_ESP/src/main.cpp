@@ -114,7 +114,6 @@ void loop()
   case 't':
     digitalWrite( DEFAULT_LED_PIN, HIGH);
     tickle();
-
     break;
 
   case 'f':
@@ -123,7 +122,7 @@ void loop()
   
     case 'p':
     digitalWrite( DEFAULT_LED_PIN, LOW);
-     breath();
+    breath();
       break;
  case 'i':
     digitalWrite( DEFAULT_LED_PIN, HIGH);
