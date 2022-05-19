@@ -25,6 +25,9 @@ String previousGesture;
 String currentGesture;
 int predictCounter;
 
+char lastCommand;
+char newCommand;
+
 // smoothing parameters
 int numRead = 15;
 
@@ -109,27 +112,42 @@ void loop()
 if (previousGesture == currentGesture){
     predictCounter++;
 }else{
-  predictCounter=0;
+    predictCounter=0;
 }
 
-if (predictCounter >6){
+if (predictCounter >6 ){
   Serial.print(" --------------- Trigger Gesture: ");
   Serial.println(currentGesture);
  if (currentGesture.equals("default")){
-    Serial2.write('i');
+   newCommand='d';
+    // Serial2.write('d');
   }
   if (currentGesture.equals("tickle")){
-     Serial2.write('t');
+    newCommand='t';
+    //  Serial2.write('t');
   }
    if (currentGesture.equals("pat")){
-     Serial2.write('p');
+      newCommand='p';
+    //  Serial2.write('p');
   }
    if (currentGesture.equals("constantTouch")){
-     Serial2.write('i');
+    newCommand='c';
+    // Serial2.write('c');
   }
- 
+
+  if (lastCommand != newCommand)
+  {
+   Serial2.write(newCommand);
+   lastCommand = newCommand;
+   Serial.print("____________________SENT COMMAND___");
+   Serial.print(newCommand);
+   Serial.println("_____________________");
+
+  }
+  
 
 }
+
   /**************************/
   previousGesture = currentGesture;
    

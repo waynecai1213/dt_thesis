@@ -356,10 +356,7 @@ void gradualUp_3()
   {
      brightnessValue++;
   }
-
   }
-
- 
 
   
     fill_solid(leds, NUM_LEDS, CRGB::White);
@@ -535,7 +532,6 @@ void gradualUp_2()
 
 void patToSleep()
 {
-
   // time affect breathing speed
   EVERY_N_MILLISECONDS(breathSpeed)
   {

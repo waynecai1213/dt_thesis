@@ -20,21 +20,22 @@ bool isEnd = false;
 uint8_t colorIndex[NUM_LEDS];
 
 char functionIndex = 'i';
+char lastFunctionIndex = 'i';
 
 uint8_t patCounter = 0;
-int breathSpeed = 30;
+uint8_t upCounter = 0;
+int breathSpeed = 20;
 unsigned long preTime;
 uint8_t downCounter = 0;
 
 CRGB leds[NUM_LEDS];
 
-
-void idle(){
+void idle_on()
+{
   fill_solid(leds, NUM_LEDS, CRGB::White);
   FastLED.setBrightness(max_bright);
   FastLED.show();
 }
-
 
 void tickle()
 {
@@ -46,8 +47,20 @@ void tickle()
   FastLED.show();
 }
 
+void tickle_gradualUp(){
+  for (uint8_t i = NUM_LEDS / 2; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::White;
+    leds[NUM_LEDS - i] = CRGB::White;
+    // fadeToBlackBy(leds, NUM_LEDS, 10);
+    FastLED.show();
+    delay(60);
+  }
+}
 
-void breath(){
+
+void breath()
+{
   // time affect breathing speed
   EVERY_N_MILLISECONDS(breathSpeed)
   {
@@ -63,24 +76,82 @@ void breath(){
       }
       if (brightnessValue == 20 || brightnessValue == max_bright / 2)
       {
-        breathSpeed = 20;
+        // breathSpeed = 20;
         isEnd = !isEnd;
         patCounter++;
-        delay(random(100,200));
+        delay(random(100, 200));
       }
     }
   }
-
   // pat
-if (patCounter == 6)
+  if (patCounter == 6 && brightnessValue > 0)
   {
-    functionIndex = 'i';
+    brightnessValue--;
   }
   fill_solid(leds, NUM_LEDS, CRGB::White);
   int eased_brightnessValue = ease8InOutCubic(brightnessValue);
   // int eased_brightnessValue = map(ease8InOutCubic(brightnessValue), 0, ease8InOutCubic(max_bright), 0, max_bright);
   FastLED.setBrightness(eased_brightnessValue);
   FastLED.show();
+}
+
+// gradual up
+void contantTouch()
+{
+  EVERY_N_MILLISECONDS(15)
+  {
+    if (brightnessValue < max_bright / 3 && upCounter == 0)
+    {
+      brightnessValue++;
+    }
+    else if (upCounter == 0)
+    {
+      upCounter = 1;
+      delay(200);
+    }
+
+    if (upCounter == 1 && brightnessValue > 0)
+    {
+      brightnessValue--;
+    }
+    else if (upCounter == 1)
+    {
+      upCounter = 2;
+      delay(500);
+    }
+
+    int currentTime;
+    if (upCounter == 2 && brightnessValue < max_bright)
+    {
+      brightnessValue++;
+      currentTime = millis();
+    }
+    else if (upCounter == 2)
+    {
+      if ((millis() - currentTime) > 5000)
+      {
+        // functionIndex = 4;
+      }
+    }
+  }
+  fill_solid(leds, NUM_LEDS, CRGB::White);
+  // ease in out funtion: https://github.com/FastLED/FastLED/wiki/High-performance-math#easing-and-linear-interpolation-functions
+  int eased_brightnessValue = map(ease8InOutCubic(brightnessValue), 0, ease8InOutCubic(max_bright), 0, max_bright);
+  FastLED.setBrightness(eased_brightnessValue);
+  FastLED.show();
+}
+
+void configInfo()
+{
+  if (functionIndex == 'p')
+  {
+    brightnessValue = max_bright / 2;
+    patCounter = 0;
+  }
+  if (functionIndex == 't')
+  {
+    FastLED.setBrightness(max_bright);
+  }
 }
 
 void setup()
@@ -98,35 +169,59 @@ void setup()
   FastLED.setTemperature(Candle);
 }
 
-
-
 void loop()
 {
-
   if (Serial2.available() > 0)
   {
     functionIndex = Serial2.read(); // gets one byte from serial buffer
+    configInfo();
+  }
 
+  if (Serial.available() > 0)
+  {
+    functionIndex = Serial.read(); // gets one byte from serial buffer
+    configInfo();
   }
 
   switch (functionIndex)
   {
+  
   case 't':
-    digitalWrite( DEFAULT_LED_PIN, HIGH);
+    digitalWrite(DEFAULT_LED_PIN, HIGH);
     tickle();
+    lastFunctionIndex = 't';
     break;
 
   case 'f':
-    digitalWrite( DEFAULT_LED_PIN, LOW);
+    digitalWrite(DEFAULT_LED_PIN, LOW);
+ 
     break;
-  
-    case 'p':
-    digitalWrite( DEFAULT_LED_PIN, LOW);
+
+  case 'p':
+    digitalWrite(DEFAULT_LED_PIN, LOW);
     breath();
-      break;
- case 'i':
-    digitalWrite( DEFAULT_LED_PIN, HIGH);
-     idle();
+    lastFunctionIndex = 'p';
+    break;
+
+  case 'd':
+   digitalWrite(DEFAULT_LED_PIN, HIGH);
+    if (lastFunctionIndex == 't'){
+       tickle_gradualUp();
+    }
+    if (lastFunctionIndex == 'c'){
+        // idle_on();
+    }
+    if (lastFunctionIndex == 'p'){
+        // idle_off();
+    }
+   
+   
+    break;
+
+  case 'c':
+    digitalWrite(DEFAULT_LED_PIN, HIGH);
+    contantTouch();
+    lastFunctionIndex = 'c';
     break;
 
   default:
