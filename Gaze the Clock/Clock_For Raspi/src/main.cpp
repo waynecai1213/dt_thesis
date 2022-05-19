@@ -175,13 +175,13 @@ void switchCommand()
     stepper_Min.setAcceleration(4000.0);
     if (stepper_Hr.currentPosition() > 0)
     {
-      stepper_Hr.move(150);
-      stepper_Min.move(150);
+      stepper_Hr.move(100);
+      stepper_Min.move(100);
     }
     else
     {
-      stepper_Hr.move(-150);
-      stepper_Min.move(-150);
+      stepper_Hr.move(-100);
+      stepper_Min.move(-100);
     }
 
     while (stepper_Hr.distanceToGo() != 0 || stepper_Min.distanceToGo() != 0)
@@ -189,7 +189,7 @@ void switchCommand()
       stepper_Hr.run();
       stepper_Min.run();
     }
-    delay(50);
+    delay(30);
     // stepper_Hr.stop();
     // stepper_Min.stop();
     // stepper_Hr.runToPosition();
@@ -406,7 +406,7 @@ void setup()
    // Hall sensor
   pinMode(hallPin_Hr, INPUT);
   pinMode(hallPin_Min, INPUT);
-  
+
   /*Homing Stepper Motos*/ // this homing function should go before Serial print and AP mode setting, otherwise it won't print or connect...
   home_stepper_Hr.runHome();
   home_stepper_Min.runHome();

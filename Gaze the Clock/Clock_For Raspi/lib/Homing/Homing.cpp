@@ -12,8 +12,8 @@ Homing::Homing(int pin, AccelStepper stepper, int dir)
   _homePin = pin;
   _dir = dir;
   _stepper = stepper;
-  _stepper.setMaxSpeed(400);
-  _stepper.setAcceleration(300);
+  _stepper.setMaxSpeed(300);
+  _stepper.setAcceleration(200);
 }
 
 void Homing::runHome()
@@ -29,8 +29,8 @@ void Homing::runHome()
 
   // Reset position and speed
   _stepper.setCurrentPosition(0);
-  _stepper.setMaxSpeed(400.0);
-  _stepper.setAcceleration(400.0);
+  _stepper.setMaxSpeed(300.0);
+  _stepper.setAcceleration(300.0);
 
  _stepper.moveTo(_dir*10000*(-1));
   
@@ -42,8 +42,8 @@ void Homing::runHome()
   }
 
   _stepper.setCurrentPosition(0);
-  _stepper.setMaxSpeed(600.0);
-  _stepper.setAcceleration(400.0);
+  _stepper.setMaxSpeed(300.0);
+  _stepper.setAcceleration(200.0);
   // Serial.println("----- Homed -----");
  
 }
