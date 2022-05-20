@@ -213,6 +213,17 @@ void loop()
     }
     if (lastFunctionIndex == 'p'){
         // idle_off();
+      if(  brightnessValue > 0)
+      {
+        brightnessValue--;
+        // FastLED.setBrightness(brightnessValue);
+        int eased_brightnessValue = ease8InOutCubic(brightnessValue);
+        // int eased_brightnessValue = map(ease8InOutCubic(brightnessValue), 0, ease8InOutCubic(max_bright), 0, max_bright);
+        FastLED.setBrightness(eased_brightnessValue);
+
+        FastLED.show();
+      }
+
     }
    
    

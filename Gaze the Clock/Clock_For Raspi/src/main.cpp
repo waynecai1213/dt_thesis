@@ -63,8 +63,8 @@ void switchCommand()
     // stepper_Min.stop();
     // stepper_Hr.runToPosition();
     // stepper_Min.runToPosition();
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
 
     Serial.println("start homing");
     home_stepper_Hr.runHome();
@@ -84,8 +84,8 @@ void switchCommand()
 
   // initiate real time mode
   case 'i': // h > i
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
     Serial.println("----- show correct time, Start-----");
     stepper_Hr.setMaxSpeed(600.0);
     stepper_Hr.setAcceleration(1200.0);
@@ -126,8 +126,8 @@ void switchCommand()
 
   // move minute hand as real time ... Speed up ...
   case 't': //
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
     
     Serial.println("----- Move minute hand as real time -----");
     previousMillis = millis();
@@ -139,10 +139,10 @@ void switchCommand()
 
   // drop hands
   case 'd':
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
 
-    minutes++;
+    // minutes++;
       // set
     stepper_Hr.setMaxSpeed(1000.0);
     stepper_Hr.setAcceleration(2000.0);
@@ -162,8 +162,8 @@ void switchCommand()
 
     // drop hands with anticipation
   case 'D':
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
 
     // minutes++;
     // reCalPos();
@@ -332,8 +332,8 @@ void switchCommand()
 
     // Bye-Bye
   case 'B':
-    stepper_Hr.enableOutputs();
-    stepper_Min.enableOutputs();
+    // stepper_Hr.enableOutputs();
+    // stepper_Min.enableOutputs();
 
     stepper_Min.setMaxSpeed(1000.0);
     stepper_Min.setAcceleration(2000.0);
@@ -358,6 +358,19 @@ void switchCommand()
     stepper_Min.disableOutputs(); // disable power
     clock_state = 'S';
     break;
+  
+
+  case 'O':
+    stepper_Hr.enableOutputs();
+    stepper_Min.enableOutputs();
+    
+    stepper_Hr.setMaxSpeed(600.0);
+    stepper_Hr.setAcceleration(2000.0);
+
+    stepper_Min.setMaxSpeed(600.0);
+    stepper_Min.setAcceleration(2000.0);
+
+  break;
   }
 }
 
@@ -475,12 +488,12 @@ void loop()
     dropHands();
     // stepper_Hr.run();
     // stepper_Min.run();
-    if ((abs(stepper_Hr.currentPosition()) <= 0.001) && (abs(stepper_Min.currentPosition()) <= 0.001))
-    {
-      // stepper_Hr.stop();
-      // stepper_Min.stop();
-      clock_state = 'x';
-    }
+    // if ((abs(stepper_Hr.currentPosition()) <= 0.001) && (abs(stepper_Min.currentPosition()) <= 0.001))
+    // {
+    //   // stepper_Hr.stop();
+    //   // stepper_Min.stop();
+    //   clock_state = 'x';
+    // }
 
     break;
 

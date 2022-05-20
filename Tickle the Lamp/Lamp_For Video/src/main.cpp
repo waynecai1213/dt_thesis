@@ -328,6 +328,7 @@ void knockBlink()
   }
 }
 
+
 // case: 3
 void gradualUp_3()
 {
@@ -413,7 +414,6 @@ void gradualUp()
 }
 
 // case: 4
-
 
 void gradualDown()
 {

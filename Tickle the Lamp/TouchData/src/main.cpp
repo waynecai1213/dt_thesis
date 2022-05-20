@@ -24,6 +24,7 @@ int patternCounter1 = 0;
 String previousGesture;
 String currentGesture;
 int predictCounter;
+int tickleCounter;
 
 char lastCommand;
 char newCommand;
@@ -114,6 +115,15 @@ if (previousGesture == currentGesture){
 }else{
     predictCounter=0;
 }
+
+if (predictCounter >3 && currentGesture.equals("tickle")){
+  newCommand='t';
+  Serial2.write(newCommand);
+  Serial.print(" --------------- Trigger Gesture: ");
+  Serial.println(currentGesture);
+  lastCommand = newCommand;
+}
+
 
 if (predictCounter >6 ){
   Serial.print(" --------------- Trigger Gesture: ");
